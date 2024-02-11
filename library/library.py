@@ -774,7 +774,7 @@ def rungekutta_4(func,x0,y0,xn,h):
         Y.append(Y[i]+(1/6)*(k1+2*k2+2*k3+k4))
         X.append(X[i]+h)
         i += 1
-    return X, Y
+    return X, Y, i
 
 # Coupled ODE 2D
 def coupled_rungekutta_2D(x0, v0, t, func_dxdt, func_dvdt, dt, Tn): 
