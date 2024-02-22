@@ -27,6 +27,259 @@ def fixed_point_iteration(g, x0, tol, max_iterations):
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+#------------------------------------------------------------------------------------------------------------
+# MATRIX SOLVE METHODS:
+def load_matrix(file):
+    with open(file, 'r' ) as f:
+        mat_M = [[int(num) for num in row.split(' ')] for row in f]
+    return mat_M
+
+def is_symmetric(matrix):
+    if not matrix:
+        return False
+    
+    num_rows = len(matrix)
+    num_cols = len(matrix[0])
+
+    if num_rows != num_cols:
+        return False
+
+    for i in range(num_rows):
+        for j in range(num_cols):
+            if matrix[i][j] != matrix[j][i]:
+                return False
+    return True
+            
+def transpose_matrix(matrix):
+    if not matrix:
+        return []
+
+    num_rows = len(matrix)
+    num_cols = len(matrix[0])
+
+    # Create a new matrix to store the transpose
+    transpose = [[0 for _ in range(num_rows)] for _ in range(num_cols)]
+
+    # Fill the transpose matrix
+    for i in range(num_rows):
+        for j in range(num_cols):
+            transpose[j][i] = matrix[i][j]
+
+    return transpose
+
+def diag_domin(matrix):
+  for i in range(len(matrix)):
+      index = i 
+      max_value = matrix[i][i]
+      for j in range(len(matrix)):
+        if matrix[j][i]>max_value:
+          index = j
+      matrix[index],matrix[i]=matrix[i],matrix[index]
+  return matrix
+ 
+# Gauss Jordan elemination method solve function for a n row matrix
+def gauss_jordan(A, b):
+    num_equations = len(A)
+    num_variables = len(A[0])
+    
+    # Augment the matrix with the constant vector
+    augmented_matrix = [row + [bi] for row, bi in zip(A, b)]
+
+    for i in range(num_equations):
+        # Partial pivoting
+        max_row_index = i
+        for j in range(i + 1, num_equations):
+            if abs(augmented_matrix[j][i]) > abs(augmented_matrix[max_row_index][i]):
+                max_row_index = j
+        augmented_matrix[i], augmented_matrix[max_row_index] = augmented_matrix[max_row_index], augmented_matrix[i]
+
+        # Make the diagonal elements 1
+        divisor = augmented_matrix[i][i]
+        if divisor == 0:
+            return None  # No unique solution
+        augmented_matrix[i] = [element / divisor for element in augmented_matrix[i]]
+
+        # Make the other elements in the column zero
+        for j in range(num_equations):
+            if j != i:
+                factor = augmented_matrix[j][i]
+                augmented_matrix[j] = [element_j - factor * element_i for element_i, element_j in zip(augmented_matrix[i], augmented_matrix[j])]
+
+    # Extract the solution
+    solution = [row[-1] for row in augmented_matrix]
+    return solution
+
+
+
+# LU decomposition solution method
+def lu_decomposition(A):
+    n = len(A)
+    L = np.zeros((n, n))
+    U = np.zeros((n, n))
+
+    for i in range(n):
+        L[i, i] = 1
+
+    for i in range(n):
+        for j in range(i, n):
+            sum_val = sum(L[i, k] * U[k, j] for k in range(i))
+            U[i, j] = A[i, j] - sum_val
+
+        for j in range(i + 1, n):
+            sum_val = sum(L[j, k] * U[k, i] for k in range(i))
+            L[j, i] = (A[j, i] - sum_val) / U[i, i]
+
+    return L, U
+
+def LU_decom_solve(A, b):
+    L, U = lu_decomposition(A)
+    n = len(A)
+    
+    # Solve Ly = b
+    y = np.zeros(n)
+    for i in range(n):
+        y[i] = (b[i] - np.dot(L[i, :i], y[:i])) / L[i, i]
+
+    # Solve Ux = y
+    x = np.zeros(n)
+    for i in range(n - 1, -1, -1):
+        x[i] = (y[i] - np.dot(U[i, i + 1:], x[i + 1:])) / U[i, i]
+
+    return x
+
+
+
+
+def gauss_siedel(matrix, constant, p):
+    
+    solution = [0 for i in range(len(matrix[0]))]
+    row = len(matrix)
+ 
+    for k in range(1000):
+        n = 0
+        for i in range(row):
+    
+            temp_sum1 = sum(matrix[i][j]*solution[j] for j in range(i))
+            temp_sum2 = sum(matrix[i][j]*solution[j] for j in range(i+1,row))
+            
+            solved = (1/matrix[i][i])*(constant[i]-temp_sum1 - temp_sum2)
+            if abs(solved-solution[i]) < p:
+                n +=1
+            solution[i] = solved
+        if i == len(matrix):
+            break
+    return solution
+
+def forback_substitution(mat_L, matrix, vec_B):
+
+    
+    x = [0] * len(matrix[0])
+    y = [0] * len(mat_L[0])
+    
+     
+    for i in range(len(mat_L)):
+        sum = 0
+        for j in range(i):
+            sum += mat_L[i][j]*y[j]
+        y[i] = vec_B[i] - sum
+
+    
+    for i in reversed(range(len(matrix))):
+        sum = 0
+        for j in reversed(range(i, len(matrix[0]))):
+            sum += matrix[i][j]*x[j]
+        x[i] = (y[i] - sum)/matrix[i][i]
+
+    return x
+
+
+def check_for_inverse(matrix):
+    det = 1
+    for i in range(len(matrix)):
+        det = det*matrix[i][i]
+
+    if det == 0:
+        raise Warning("Inverse of the matrix does not exist")
+        return False
+    
+    else:
+        return True
+
+
+def matrix_inverse(matrix):
+
+    n = len(matrix)
+
+    inverse_mat = [[0 for x in range(n)] for y in range(n)] 
+
+    L,U = lu_decomposition(matrix)
+
+    if check_for_inverse(U) == True:
+
+        for i in range(n):
+
+
+            B = [0 for x in range(n)]
+            B[i] = 1
+
+            column = forback_substitution(L, U, B)
+
+            for j in range(n):
+                inverse_mat[j][i] = round(column[j], 3)
+
+        return inverse_mat
+
+    else:
+        return None
+
+
+# cholesky decomposition
+def cholesky(A):
+    
+    r = len(A)
+    c = len(A[0])
+    L = [[0.0 for x in range(0,c)] for y in range(0,r)]
+    
+    for i in range(r):
+        for k in range(i+1):
+            temp_sum = sum(L[i][j]*L[k][j] for j in range(k))
+            
+            if i == k:
+                L[i][k] = round((A[i][i] - temp_sum)**0.5, 2)
+                
+            else:
+                L[i][k] = round((1/L[k][k])*(A[i][k]-temp_sum), 2)
+    
+        
+    return L
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # INTEGRATONS _________________________________________________________________________________________________________________________
 
 # mid-point method
