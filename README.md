@@ -5,5 +5,6 @@
 ## Assignments
 1. [**Assignment-1:** Assignment 1](Assignments/assignment1.ipynb)
 2. [**Assignment-2:** Assignment 2](Assignments/assignment2.ipynb)
+3. [**Assignment-3:** Assignment 3](Assignments/assignment3.ipynb)
 ## Mid Semester Exam
 1. [**Mid-Sem Exam SolutionS**](MidSem_Exam.ipynb)
