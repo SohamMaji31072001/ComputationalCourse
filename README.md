@@ -9,3 +9,4 @@
 4. [**Assignment-4:** Assignment 4](Assignments/assignment4.ipynb)
 ## Mid Semester Exam
 1. [**Mid-Sem Exam SolutionS**](MidSem_Exam.ipynb)
+2. [**End-Sem Exam Solutions**](EndSem_Exam.ipynb)
