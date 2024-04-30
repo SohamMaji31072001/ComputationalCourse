@@ -560,4 +560,45 @@ def Heat_Equation_solve(temperature_func, Lx, Nx, Lt, Nt):
             plt.plot(i_list, V0)
     plt.show()
     
+def linear_regression_with_errors(x, y, sigma_y):
+    weights = 1 / (sigma_y ** 2)
+    sum_weights = np.sum(weights)
+    sum_weights_x = np.sum(weights * x)
+    sum_weights_y = np.sum(weights * y)
+    sum_weights_x_squared = np.sum(weights * x ** 2)
+    sum_weights_xy = np.sum(weights * x * y)
+
+    delta= sum_weights * sum_weights_x_squared - sum_weights_x ** 2
+
+    slope = (sum_weights * sum_weights_xy - sum_weights_x * sum_weights_y) / delta
+    intercept = (sum_weights_x_squared * sum_weights_y - sum_weights_x * sum_weights_xy) / delta
+
+    std_err = np.sqrt(sum_weights / delta)
+
+    return slope, intercept, std_err
+
+def chi_squared(residuals, sigma):
+    return np.sum((residuals / sigma) ** 2)
+
+def calculate_norm(x):
+    return np.sqrt(np.sum(x ** 2))
+
+# Function to perform power iteration
+def power_iteration(A, num_iterations):
+    # Initialize a random vector
+    x = np.random.rand(A.shape[0])
+    x_norm = calculate_norm(x)
+    x = x / x_norm
     
+    for _ in range(num_iterations):
+        # Multiply A by x
+        Ax = np.dot(A, x)
+        
+        # Normalize Ax
+        Ax_norm = calculate_norm(Ax)
+        x = Ax / Ax_norm
+    
+    # Compute eigenvalue
+    eigenvalue = np.dot(x, Ax)
+    
+    return eigenvalue, x
